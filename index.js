@@ -7,18 +7,41 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
-
-// Create HTTP server and initialize socket.io
 const server = http.createServer(app);
+
+// Initialize socket.io with CORS configuration
 const io = socketIo(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"], // Allowed methods
+    origin: [
+      "http://localhost:5173",
+      "https://management-server-rosy.vercel.app",
+      "https://task-mangement-client.onrender.com",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
 
-// Middleware
-app.use(cors());
+// Middleware setup
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://management-server-rosy.vercel.app",
+  "https://task-mangement-client.onrender.com",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // MongoDB Connection
